@@ -37,9 +37,9 @@ class Customer
 private
 
   def transactions_ids
-    transaction_ids = repository.engine.db.execute("
+    repository.engine.db.execute("
     SELECT transactions.id
     FROM transactions JOIN invoices ON transactions.invoice_id=invoices.id
-    WHERE invoices.customer_id=#{id}")
+    WHERE invoices.customer_id=#{id}").flatten
   end
 end

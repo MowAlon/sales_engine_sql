@@ -18,7 +18,7 @@ class SalesEngineTest < MiniTest::Test
     assert_equal "asdf", engine.csv_path
   end
 
-  def test_it_starts_up_a_new_sales_engine
+  def test_it_creates_repositories
     engine = SalesEngine.new
     engine.startup
     assert_equal CustomerRepository, engine.customer_repository.class
@@ -27,8 +27,6 @@ class SalesEngineTest < MiniTest::Test
     assert_equal InvoiceItemRepository, engine.invoice_item_repository.class
     assert_equal MerchantRepository, engine.merchant_repository.class
     assert_equal ItemRepository, engine.item_repository.class
-    assert_equal engine, engine.customer_repository.se
-    assert_equal engine, engine.merchant_repository.se
   end
 
 end

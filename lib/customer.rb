@@ -1,6 +1,6 @@
 class Customer
   attr_reader :id, :first_name, :last_name,
-  :created_at, :updated_at, :repository, :fields
+  :created_at, :updated_at, :repository
 
   def initialize(input_data, repository)
     @id = input_data[0]
@@ -9,19 +9,17 @@ class Customer
     @created_at = input_data[3]
     @updated_at = input_data[4]
     @repository = repository
-    @fields = [:id, :first_name, :last_name,
-      :created_at, :updated_at]
   end
 
   def invoices
-    repository.engine.invoice_repository.find_all_by_customer_id(id)
+    repository.engine.invoice_repository.find_all_by(:customer_id,id)
   end
 
   def transactions
     customer_transactions =  []
     invoices.each do |invoice|
       transaction_repository = repository.engine.transaction_repository
-      transaction = transaction_repository.find_all_by_invoice_id(invoice.id)
+      transaction = transaction_repository.find_all_by(:invoice_id, invoice.id)
       customer_transactions << transaction
     end
     customer_transactions.flatten

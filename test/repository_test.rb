@@ -46,6 +46,7 @@ class RepositoryTest < MiniTest::Test
 
   def test_it_returns_a_random_entry
     engine = SalesEngine.new
+    engine.startup
     repository = ItemRepository.new(engine)
 
     assert_equal Item, repository.random.class

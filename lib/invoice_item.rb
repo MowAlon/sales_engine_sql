@@ -1,7 +1,7 @@
 class InvoiceItem
   attr_reader :id, :item_id, :invoice_id, :quantity,
   :unit_price, :created_at, :updated_at,
-  :repository, :fields
+  :repository
 
   def initialize(input_data, repository)
     @id = input_data[0]
@@ -12,8 +12,6 @@ class InvoiceItem
     @created_at = input_data[5]
     @updated_at = input_data[6]
     @repository = repository
-    @fields = [:id, :item_id, :invoice_id, :quantity,
-    :unit_price, :created_at, :updated_at]
   end
 
   def invoice

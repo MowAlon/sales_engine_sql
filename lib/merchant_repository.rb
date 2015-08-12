@@ -11,64 +11,80 @@ class MerchantRepository < Repository
   end
 
   def most_revenue(merchant_count)
-    top_merchants(merchant_count, ranked_merchants(revenue_list))
+    top_merchants(merchant_count, revenue_by_merchant)
   end
 
   def most_items(merchant_count)
-    top_merchants(merchant_count, ranked_merchants(quantity_sold_list))
+    top_merchants(merchant_count, quantity_by_merchant)
   end
 
   def revenue(date)
-    date = good_date(date)
-    total = 0
+    create_successful_invoice_items_view
 
-    revenue_by_invoice.each do |invoice_id, revenue|
-      invoice = engine.invoice_repository.find_by(:id, invoice_id)
-      if invoice.successful? && good_date(invoice.created_at) == date
-          total += revenue
-      end
+    revenue_data_on_date = engine.db.execute("
+    SELECT successful_invoice_items.quantity, successful_invoice_items.unit_price
+    FROM successful_invoice_items JOIN invoices ON successful_invoice_items.invoice_id=invoices.id
+    WHERE DATE(invoices.created_at)=DATE('#{date}')")
+    drop_successful_invoice_items_view
+
+    total = revenue_data_on_date.reduce(0){|sum,data| sum + (data[0] * data[1])}
+    BigDecimal.new(total) * 0.01
+  end
+
+private
+
+  def top_merchants(count, data_by_merchant)
+    ranked_merchants(data_by_merchant)[0..count - 1].map{|merchant_id, data| find_by(:id, merchant_id)}
+  end
+
+  def ranked_merchants(data_by_merchant)
+  	data_by_merchant.sort_by{|merchant_id, data| data}.reverse
+  end
+
+  def revenue_by_merchant
+    revenue_totals = Hash.new(0)
+    revenue_components_by_merchant.each do |merchant_id, quantity, price|
+      revenue_totals[merchant_id] += (quantity * price)
     end
-    total * 0.01
+    revenue_totals
   end
 
-  def revenue_by_invoice
-    invoices = Hash.new(0)
-    engine.invoice_item_repository.all.each do |invoice_item|
-      invoice_id = invoice_item.invoice_id
-      invoices[invoice_id] += invoice_item.simple_revenue
+  def quantity_by_merchant
+    quantity_totals = Hash.new(0)
+    quantities_by_merchant.each do |merchant_id, quantity|
+      quantity_totals[merchant_id] += quantity
     end
-    invoices
+    quantity_totals
   end
 
-  def ranked_merchants(merchant_list)
-    merchant_list.sort_by{|merchant, quantity| quantity}.reverse
+  def quantities_by_merchant
+    create_successful_invoice_items_view
+    quantity_data = engine.db.execute("
+    SELECT invoices.merchant_id, successful_invoice_items.quantity
+    FROM successful_invoice_items JOIN invoices ON successful_invoice_items.invoice_id=invoices.id")
+    drop_successful_invoice_items_view
+    quantity_data
   end
 
-  def top_merchants(count, merchants)
-    merchants[0..count - 1].map{|merchant_rank| find_by_id(merchant_rank.first)}
+  def revenue_components_by_merchant
+    create_successful_invoice_items_view
+    revenue_data = engine.db.execute("
+    SELECT invoices.merchant_id, successful_invoice_items.quantity, successful_invoice_items.unit_price
+    FROM successful_invoice_items JOIN invoices ON successful_invoice_items.invoice_id=invoices.id")
+    drop_successful_invoice_items_view
+    revenue_data
   end
 
-  def revenue_list
-    invoice_items = engine.invoice_item_repository
-    item_revenues = invoice_items.item_data_by_invoice(:simple_revenue)
-    data_by_merchant(item_revenues)
+  def create_successful_invoice_items_view
+    engine.db.execute("
+    CREATE VIEW successful_invoice_items AS
+    SELECT invoice_items.invoice_id, invoice_items.quantity, invoice_items.unit_price
+    FROM invoice_items JOIN transactions ON transactions.invoice_id=invoice_items.invoice_id
+    WHERE transactions.result='success'")
   end
 
-  def quantity_sold_list
-    invoice_items = engine.invoice_item_repository
-    item_quantities = invoice_items.item_data_by_invoice(:quantity)
-    data_by_merchant(item_quantities)
-  end
-
-  def data_by_merchant(item_data_by_invoice)
-    output = Hash.new(0)
-    item_data_by_invoice.each do |invoice_id, item_data|
-      invoice = engine.invoice_repository.find_by_id(invoice_id)
-      if invoice.successful?
-        item_data.each {|item_id, data| output[invoice.merchant_id] += data}
-      end
-    end
-    output
+  def drop_successful_invoice_items_view
+    engine.db.execute("DROP VIEW successful_invoice_items")
   end
 
 end

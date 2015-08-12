@@ -1,7 +1,7 @@
 class Invoice
   attr_reader :id, :customer_id, :merchant_id,
               :status, :created_at, :updated_at,
-              :repository, :fields
+              :repository
 
   def initialize(input_data, repository)
     @id = input_data[0]
@@ -11,8 +11,6 @@ class Invoice
     @created_at = input_data[4]
     @updated_at = input_data[5]
     @repository = repository
-    @fields = [:id, :customer_id, :merchant_id,
-                :status, :created_at, :updated_at]
   end
 
   def transactions
@@ -24,9 +22,6 @@ class Invoice
   end
 
   def items
-
-    invoice_items.each {|ii| puts ii.class}
-
     invoice_items.map do |invoice_item|
       repository.engine.item_repository.find_by(:id, invoice_item.item_id)
     end.uniq {|item| item.id}

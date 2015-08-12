@@ -2,7 +2,7 @@ class Transaction
   attr_reader :id, :invoice_id, :credit_card_number,
   :credit_card_expiration_date,
   :result, :created_at, :updated_at,
-  :repository, :fields
+  :repository
 
   def initialize(input_data, repository)
     @id = input_data[0]
@@ -13,9 +13,6 @@ class Transaction
     @created_at = input_data[5]
     @updated_at = input_data[6]
     @repository = repository
-    @fields = [:id, :invoice_id, :credit_card_number,
-    :credit_card_expiration_date,
-    :result, :created_at, :updated_at]
   end
 
   def invoice

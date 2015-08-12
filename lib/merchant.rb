@@ -1,5 +1,5 @@
 class Merchant
-  attr_reader :id, :name, :created_at, :updated_at, :repository, :fields
+  attr_reader :id, :name, :created_at, :updated_at, :repository
 
   def initialize(input_data, repository)
     @id = input_data[0]
@@ -7,8 +7,6 @@ class Merchant
     @created_at = input_data[2]
     @updated_at = input_data[3]
     @repository = repository
-    @fields = [:id, :name,
-                :created_at, :updated_at]
   end
 
   def items

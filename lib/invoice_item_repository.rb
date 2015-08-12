@@ -57,4 +57,16 @@ class InvoiceItemRepository < Repository
     end
   end
 
+  def create_successful_invoice_items_view
+    engine.db.execute("
+    CREATE VIEW successful_invoice_items AS
+    SELECT invoice_items.invoice_id, invoice_items.item_id, invoice_items.quantity, invoice_items.unit_price
+    FROM invoice_items JOIN transactions ON transactions.invoice_id=invoice_items.invoice_id
+    WHERE transactions.result='success'")
+  end
+
+  def drop_successful_invoice_items_view
+    engine.db.execute("DROP VIEW successful_invoice_items")
+  end
+
 end

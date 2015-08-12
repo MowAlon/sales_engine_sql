@@ -11,35 +11,54 @@ class ItemRepository < Repository
   end
 
   def most_revenue(item_count)
-
-    invoice_items = engine.invoice_item_repository
-    revenue = invoice_items.item_data_by_invoice(:simple_revenue)
-    item_revenue_by_invoice = revenue
-    items_by_revenue = invoice_items.items_values(item_revenue_by_invoice)
-
-    items_by_revenue = items_by_revenue.sort_by do |item,revenue|
-      revenue
-    end
-
-    items_by_revenue.reverse!
-    top_items = items_by_revenue[0..item_count-1].map do |item_id, revenue|
-      find_by_id(item_id)
-    end
-    top_items
+    top_items(item_count, revenue_by_item)
   end
 
   def most_items(item_count)
-    invoice_items = engine.invoice_item_repository
-    item_quantity_by_invoice = invoice_items.item_data_by_invoice(:quantity)
-    items_by_quantity = invoice_items.items_values(item_quantity_by_invoice)
-
-    items_by_quantity = items_by_quantity.sort_by do |item,quantity|
-      quantity
-    end
-    items_by_quantity.reverse!
-    top_items = items_by_quantity[0..item_count-1].map do |item_id, quantity|
-      find_by_id(item_id)
-    end
+    top_items(item_count, quantity_by_item)
   end
 
+private
+
+  def top_items(count, data_by_item)
+    ranked_items(data_by_item)[0..count - 1].map{|item_id, data| find_by(:id, item_id)}
+  end
+
+  def ranked_items(data_by_item)
+    data_by_item.sort_by{|item_id, data| data}.reverse
+  end
+
+  def revenue_by_item
+    revenue_totals = Hash.new(0)
+    revenue_components_by_item.each do |item_id, quantity, price|
+      revenue_totals[item_id] += (quantity * price)
+    end
+    revenue_totals
+  end
+
+  def quantity_by_item
+    quantity_totals = Hash.new(0)
+    quantities_by_item.each do |item_id, quantity|
+      quantity_totals[item_id] += quantity
+    end
+    quantity_totals
+  end
+
+  def revenue_components_by_item
+    engine.invoice_item_repository.create_successful_invoice_items_view
+    revenue_data = engine.db.execute("
+    SELECT successful_invoice_items.item_id, successful_invoice_items.quantity, successful_invoice_items.unit_price
+    FROM successful_invoice_items")
+    engine.invoice_item_repository.drop_successful_invoice_items_view
+    revenue_data
+  end
+
+  def quantities_by_item
+    engine.invoice_item_repository.create_successful_invoice_items_view
+    quantity_data = engine.db.execute("
+    SELECT successful_invoice_items.item_id, successful_invoice_items.quantity
+    FROM successful_invoice_items")
+    engine.invoice_item_repository.drop_successful_invoice_items_view
+    quantity_data
+  end
 end

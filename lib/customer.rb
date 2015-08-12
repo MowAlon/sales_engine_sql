@@ -16,13 +16,9 @@ class Customer
   end
 
   def transactions
-    customer_transactions =  []
-    invoices.each do |invoice|
-      transaction_repository = repository.engine.transaction_repository
-      transaction = transaction_repository.find_all_by(:invoice_id, invoice.id)
-      customer_transactions << transaction
+    transactions_ids.map do |transaction_id|
+      repository.engine.transaction_repository.find_by(:id, transaction_id)
     end
-    customer_transactions.flatten
   end
 
   def favorite_merchant
@@ -38,4 +34,12 @@ class Customer
     merchants.sort_by{|merchant, count| count}.reverse[0][0]
   end
 
+private
+
+  def transactions_ids
+    transaction_ids = repository.engine.db.execute("
+    SELECT transactions.id
+    FROM transactions JOIN invoices ON transactions.invoice_id=invoices.id
+    WHERE invoices.customer_id=#{id}")
+  end
 end

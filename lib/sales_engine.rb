@@ -26,7 +26,8 @@ class SalesEngine
 
   def startup
     open_db
-    # build_all_tables
+    create_database
+    load_database
     create_repositories
   end
 
@@ -41,24 +42,29 @@ class SalesEngine
 
   def open_db
     filename = File.expand_path "sales_info.db", __dir__
-    # File.delete filename if File.exist? filename
+    File.delete filename if File.exist? filename
     @db = SQLite3::Database.new filename
     # @db.results_as_hash = true
   end
 
-  def build_all_tables
+  def create_database
     create_customers_table
-    load_customers
     create_invoices_table
-    load_invoices
     create_invoice_items_table
-    load_invoice_items
     create_items_table
-    load_items
     create_merchants_table
-    load_merchants
     create_transactions_table
+  end
+
+  def load_database
+    db.transaction
+    load_customers
+    load_invoices
+    load_invoice_items
+    load_items
+    load_merchants
     load_transactions
+    db.commit
   end
 
   def create_customers_table

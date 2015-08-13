@@ -17,6 +17,9 @@ class SalesEngine
 
   def initialize(csv_path = our_folder)
     @csv_path = csv_path
+    create_repositories
+    open_db
+    create_database
   end
 
   def our_folder
@@ -25,19 +28,18 @@ class SalesEngine
   end
 
   def startup
-    open_db
-    create_database
     load_database
-    create_repositories
   end
+
+private
 
   def create_repositories
     @customer_repository = CustomerRepository.new(self)
     @invoice_repository = InvoiceRepository.new(self)
-    @transaction_repository = TransactionRepository.new(self)
     @invoice_item_repository = InvoiceItemRepository.new(self)
-    @merchant_repository = MerchantRepository.new(self)
     @item_repository = ItemRepository.new(self)
+    @merchant_repository = MerchantRepository.new(self)
+    @transaction_repository = TransactionRepository.new(self)
   end
 
   def open_db

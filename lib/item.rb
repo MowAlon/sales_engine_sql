@@ -22,35 +22,31 @@ class Item
   end
 
   def best_day
-    Date.parse(ranked_revenue_by_date.first[0])
+    Date.parse(ranked_quantities.first[0])
   end
 
-  def ranked_revenue_by_date
-    revenue_by_date.sort_by{|date, revenue| revenue}.reverse
+private
+
+  def ranked_quantities
+  	quantity_by_date.sort_by{|date, quantity| quantity}.reverse
   end
 
-  def revenue_by_date
-    dates = Hash.new(0)
-    revenues_by_invoice_id.each do |invoice_id, revenue|
-      invoice = repository.engine.invoice_repository.find_by(:id, invoice_id)
-      if invoice.successful?
-        date = repository.good_date(invoice.created_at)
-        dates[date] += revenue.to_f
-      end
+  def quantity_by_date
+  	quantity_totals = Hash.new(0)
+    quantities_by_date.each do |date, quantity|
+      quantity_totals[date] += quantity
     end
-    dates
+    quantity_totals
   end
 
-  def revenues_by_invoice_id
-    invoice_ids = Hash.new(0)
-    invoice_items = repository.engine.invoice_item_repository.all
+  def quantities_by_date
+    repository.engine.invoice_item_repository.create_successful_invoice_items_view
+    quantity_data = repository.engine.db.execute("
+      SELECT DATE(invoices.created_at), successful_invoice_items.quantity
+      FROM successful_invoice_items JOIN invoices ON invoices.id=successful_invoice_items.invoice_id
+      WHERE successful_invoice_items.item_id=#{id}")
+    repository.engine.invoice_item_repository.drop_successful_invoice_items_view
 
-    invoice_items.each do |invoice_item|
-      if id == invoice_item.item_id
-        invoice_ids[invoice_item.invoice_id] += invoice_item.simple_revenue
-      end
-    end
-    invoice_ids
+    quantity_data
   end
-
 end

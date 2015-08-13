@@ -35,6 +35,8 @@ class Repository
     instances_of(date_records)
   end
 
+private
+
   def db_records(field, data)
   	engine.db.execute "SELECT * FROM #{table_name} WHERE #{field.to_s} = '#{data}'"
   end
@@ -43,20 +45,7 @@ class Repository
   	records.map {|record| child_class.new(record, self)}
   end
 
-  def good_date(date)
-    if date.class == Date
-      date.strftime("%Y-%m-%d")
-    else
-      Date.parse(date).strftime("%Y-%m-%d")
-    end
-  end
-
-  def repo_table(symbol_thing)
-    @se.send(symbol_thing).table
-  end
-
   def inspect
     self.class
   end
-
 end

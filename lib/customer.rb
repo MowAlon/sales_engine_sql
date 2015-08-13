@@ -16,7 +16,7 @@ class Customer
   end
 
   def transactions
-    transactions_ids.map do |transaction_id|
+    transaction_ids.map do |transaction_id|
       repository.engine.transaction_repository.find_by(:id, transaction_id)
     end
   end
@@ -36,7 +36,7 @@ class Customer
 
 private
 
-  def transactions_ids
+  def transaction_ids
     repository.engine.db.execute("
     SELECT transactions.id
     FROM transactions JOIN invoices ON transactions.invoice_id=invoices.id

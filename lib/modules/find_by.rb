@@ -32,7 +32,7 @@ module FindBy
   end
 
   def find_by_unit_price(unit_price)
-    unit_price = BigDecimal.new(unit_price) * 100.0
+    unit_price = unit_price * 100.0
     find_by(:unit_price, unit_price)
   end
 

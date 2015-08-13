@@ -71,8 +71,8 @@ class RepositoryTest < MiniTest::Test
 
     assert_equal 1, engine.customer_repository.find_by(:id, 1).id
     assert_equal "Joey", engine.customer_repository.find_by(:id, 1).first_name
-    assert_equal 2, engine.customer_repository.find_by(:id, 2).id
-    assert_equal "Cecelia", engine.customer_repository.find_by(:id, 2).first_name
+    assert_equal 2, engine.customer_repository.find_by_id(2).id
+    assert_equal "Cecelia", engine.customer_repository.find_by_id(2).first_name
   end
 
   def test_it_can_find_by_first_name
@@ -84,8 +84,8 @@ class RepositoryTest < MiniTest::Test
 
     assert_equal 1, engine.customer_repository.find_by(:first_name, "Joey").id
     assert_equal "Joey", engine.customer_repository.find_by(:first_name, "Joey").first_name
-    assert_equal 2, engine.customer_repository.find_by(:first_name, "Cecelia").id
-    assert_equal "Cecelia", engine.customer_repository.find_by(:first_name, "Cecelia").first_name
+    assert_equal 2, engine.customer_repository.find_by_first_name("Cecelia").id
+    assert_equal "Cecelia", engine.customer_repository.find_by_first_name("Cecelia").first_name
   end
 
   def test_it_can_find_by_last_name
@@ -97,8 +97,8 @@ class RepositoryTest < MiniTest::Test
 
     assert_equal 1, engine.customer_repository.find_by(:last_name, "Ondricka").id
     assert_equal "Joey", engine.customer_repository.find_by(:last_name, "Ondricka").first_name
-    assert_equal 2, engine.customer_repository.find_by(:last_name, "Osinski").id
-    assert_equal "Cecelia", engine.customer_repository.find_by(:last_name, "Osinski").first_name
+    assert_equal 2, engine.customer_repository.find_by_last_name("Osinski").id
+    assert_equal "Cecelia", engine.customer_repository.find_by_last_name("Osinski").first_name
   end
 
   def test_it_can_find_by_customer_id
@@ -110,8 +110,8 @@ class RepositoryTest < MiniTest::Test
 
     assert_equal 1, engine.invoice_repository.find_by(:customer_id, 3).id
     assert_equal 26, engine.invoice_repository.find_by(:customer_id, 3).merchant_id
-    assert_equal 2, engine.invoice_repository.find_by(:customer_id, 4).id
-    assert_equal 75, engine.invoice_repository.find_by(:customer_id, 4).merchant_id
+    assert_equal 2, engine.invoice_repository.find_by_customer_id(4).id
+    assert_equal 75, engine.invoice_repository.find_by_customer_id(4).merchant_id
   end
 
   def test_it_can_find_by_merchant_id
@@ -136,8 +136,8 @@ class RepositoryTest < MiniTest::Test
 
     assert_equal 1, engine.invoice_repository.find_by(:status, "shipped").id
     assert_equal 26, engine.invoice_repository.find_by(:status, "shipped").merchant_id
-    assert_equal 2, engine.invoice_repository.find_by(:status, "pending").id
-    assert_equal 75, engine.invoice_repository.find_by(:status, "pending").merchant_id
+    assert_equal 2, engine.invoice_repository.find_by_status("pending").id
+    assert_equal 75, engine.invoice_repository.find_by_status("pending").merchant_id
   end
 
   def test_it_can_find_by_item_id
@@ -149,8 +149,8 @@ class RepositoryTest < MiniTest::Test
 
     assert_equal 1, engine.invoice_item_repository.find_by(:item_id, 539).id
     assert_equal 539, engine.invoice_item_repository.find_by(:item_id, 539).item_id
-    assert_equal 2, engine.invoice_item_repository.find_by(:item_id, 528).id
-    assert_equal 528, engine.invoice_item_repository.find_by(:item_id, 528).item_id
+    assert_equal 2, engine.invoice_item_repository.find_by_item_id(528).id
+    assert_equal 528, engine.invoice_item_repository.find_by_item_id(528).item_id
   end
 
   def test_it_can_find_by_invoice_id
@@ -186,10 +186,10 @@ class RepositoryTest < MiniTest::Test
     engine.db.execute "INSERT INTO invoice_items(item_id, invoice_id, quantity, unit_price, created_at, updated_at) VALUES (?,?,?,?,?,?);",
       [528, 4, 9, 23324, "2012-03-27 14:54:09", "2012-03-27 14:54:09"]
 
-    assert_equal 1, engine.invoice_item_repository.find_by(:unit_price, 13635).id
-    assert_equal 539, engine.invoice_item_repository.find_by(:unit_price, 13635).item_id
-    assert_equal 2, engine.invoice_item_repository.find_by(:unit_price, 23324).id
-    assert_equal 528, engine.invoice_item_repository.find_by(:unit_price, 23324).item_id
+    assert_equal 1, engine.invoice_item_repository.find_by_unit_price(BigDecimal.new("136.35")).id
+    assert_equal 539, engine.invoice_item_repository.find_by_unit_price(BigDecimal.new("136.35")).item_id
+    assert_equal 2, engine.invoice_item_repository.find_by_unit_price(BigDecimal.new("233.24")).id
+    assert_equal 528, engine.invoice_item_repository.find_by_unit_price(BigDecimal.new("233.24")).item_id
   end
 
   def test_it_can_find_by_description
@@ -214,8 +214,8 @@ class RepositoryTest < MiniTest::Test
 
     assert_equal 1, engine.merchant_repository.find_by(:name,"Schroeder-Jerde").id
     assert_equal "Schroeder-Jerde", engine.merchant_repository.find_by(:name,"Schroeder-Jerde").name
-    assert_equal 2, engine.merchant_repository.find_by(:name,"Klein, Rempel and Jones").id
-    assert_equal "Klein, Rempel and Jones", engine.merchant_repository.find_by(:name,"Klein, Rempel and Jones").name
+    assert_equal 2, engine.merchant_repository.find_by_name("Klein, Rempel and Jones").id
+    assert_equal "Klein, Rempel and Jones", engine.merchant_repository.find_by_name("Klein, Rempel and Jones").name
   end
 
   def test_it_can_find_by_credit_card_number
@@ -227,8 +227,8 @@ class RepositoryTest < MiniTest::Test
 
     assert_equal 1, engine.transaction_repository.find_by(:credit_card_number, "4654405418249632").id
     assert_equal 3, engine.transaction_repository.find_by(:credit_card_number, "4654405418249632").invoice_id
-    assert_equal 2, engine.transaction_repository.find_by(:credit_card_number, "4580251236515201").id
-    assert_equal 4, engine.transaction_repository.find_by(:credit_card_number, "4580251236515201").invoice_id
+    assert_equal 2, engine.transaction_repository.find_by_credit_card_number("4580251236515201").id
+    assert_equal 4, engine.transaction_repository.find_by_credit_card_number("4580251236515201").invoice_id
   end
 
   def test_it_can_find_by_result
@@ -244,17 +244,20 @@ class RepositoryTest < MiniTest::Test
     assert_equal 4, engine.transaction_repository.find_by(:result, "failed").invoice_id
   end
 
-  def test_it_finds_all_by_a_parameter
+  def test_it_finds_all_by_various_parameters
     engine = SalesEngine.new('./data_fixtures')
-    engine.db.execute "INSERT INTO customers(first_name, last_name, created_at, updated_at) VALUES (?,?,?,?);",
-      ["Joey", "Ondricka", "2012-03-27 14:54:09", "2012-03-27 14:54:09"]
-    engine.db.execute "INSERT INTO customers(first_name, last_name, created_at, updated_at) VALUES (?,?,?,?);",
-      ["Joey", "Osinski", "2012-03-27 14:54:10", "2012-03-27 14:54:10"]
-    engine.db.execute "INSERT INTO customers(first_name, last_name, created_at, updated_at) VALUES (?,?,?,?);",
-      ["Mariah", "Toy", "2012-03-27 14:54:10", "2012-03-27 14:54:10"]
+    engine.startup
 
-      assert_equal Customer, engine.customer_repository.find_all_by(:first_name, "Joey").sample.class
-      assert_equal 2, engine.customer_repository.find_all_by(:first_name, "Joey").size
+    assert_equal Customer, engine.customer_repository.find_all_by(:first_name, "Joey").sample.class
+    assert_equal Customer, engine.customer_repository.find_all_by_first_name("Joey").sample.class
+    assert_equal Customer, engine.customer_repository.find_all_by_last_name("Ondricka").sample.class
+    assert_equal InvoiceItem, engine.invoice_item_repository.find_all_by_item_id(1).sample.class
+    assert_equal Merchant, engine.merchant_repository.find_all_by_name("Schroeder-Jerde").sample.class
+    assert_equal Invoice, engine.invoice_repository.find_all_by_customer_id(1).sample.class
+    assert_equal Transaction, engine.transaction_repository.find_all_by_invoice_id(1).sample.class
+    assert_equal InvoiceItem, engine.invoice_item_repository.find_all_by_quantity(9).sample.class
+    assert_equal Invoice, engine.invoice_repository.find_all_by_status("shipped").sample.class
+    assert_equal Transaction, engine.transaction_repository.find_all_by_result("success").sample.class
   end
 
   def test_it_finds_all_by_date
@@ -266,8 +269,8 @@ class RepositoryTest < MiniTest::Test
     engine.db.execute "INSERT INTO customers(first_name, last_name, created_at, updated_at) VALUES (?,?,?,?);",
       ["Mariah", "Toy", "2012-03-28 14:54:10", "2012-03-28 14:54:10"]
 
-      assert_equal Customer, engine.customer_repository.find_all_by_date(:created_at, "2012-03-27").sample.class
-      assert_equal 2, engine.customer_repository.find_all_by_date(:created_at, "2012-03-27").size
+      assert_equal Customer, engine.customer_repository.find_all_by(:created_at, "2012-03-27").sample.class
+      assert_equal 2, engine.customer_repository.find_all_by(:created_at, "2012-03-27").size
   end
 
   def test_it_returns_an_empty_array_when_nothing_is_found_by_finds_all_by_date
@@ -279,7 +282,6 @@ class RepositoryTest < MiniTest::Test
     engine.db.execute "INSERT INTO customers(first_name, last_name, created_at, updated_at) VALUES (?,?,?,?);",
       ["Mariah", "Toy", "2012-03-28 14:54:10", "2012-03-28 14:54:10"]
 
-      assert_equal [], engine.customer_repository.find_all_by_date(:created_at, "2012-03-26")
+    assert_equal [], engine.customer_repository.find_all_by(:created_at, "2012-03-26")
   end
-
 end

@@ -18,26 +18,31 @@ class Merchant
   end
 
   def revenue(date = false)
-    set_of_invoices = if date
-      date = Date.parse(date) if date.class != Date
-      date = date.strftime("%Y-%m-%d")
-      invoices.select{|invoice| invoice.created_at[0..9] == date}
-    else
-      invoices
-    end
+    repository.engine.invoice_item_repository.create_successful_invoice_items_view
 
-    total = set_of_invoices.reduce(0) do |sum, invoice|
-      sum + invoice.revenue
+    revenue_data = if date
+      repository.engine.db.execute("
+        SELECT successful_invoice_items.quantity, successful_invoice_items.unit_price
+        FROM successful_invoice_items JOIN invoices ON successful_invoice_items.invoice_id=invoices.id
+        WHERE DATE(invoices.created_at)=DATE('#{date}') AND invoices.merchant_id=#{id}")
+    else
+      repository.engine.db.execute("
+        SELECT successful_invoice_items.quantity, successful_invoice_items.unit_price
+        FROM successful_invoice_items JOIN invoices ON successful_invoice_items.invoice_id=invoices.id
+        WHERE invoices.merchant_id=#{id}")
     end
-    total * 0.01
+    repository.engine.invoice_item_repository.drop_successful_invoice_items_view
+
+    total = revenue_data.reduce(0){|sum,data| sum + (data[0] * data[1])}
+    BigDecimal.new(total) * 0.01
   end
 
   def favorite_customer
     records = repository.engine.db.execute("
-    SELECT invoices.customer_id
-    FROM invoices JOIN transactions
-    ON transactions.invoice_id=invoices.id
-    WHERE transactions.result='success' AND invoices.merchant_id = #{id}")
+      SELECT invoices.customer_id
+      FROM invoices JOIN transactions
+      ON transactions.invoice_id=invoices.id
+      WHERE transactions.result='success' AND invoices.merchant_id = #{id}")
     records = records.flatten.group_by{|customer_id| customer_id}
     records = records.sort_by{|customer_id, appearances| appearances.size}
     favorite_customer_id = records.reverse[0][0]
@@ -45,18 +50,13 @@ class Merchant
   end
 
   def customers_with_pending_invoices
-    customers = []
-    invoices.each do |invoice|
-      if !invoice.successful?
-        customer_repository = repository.engine.customer_repository
-        customers << customer_repository.find_by(:id, invoice.customer_id)
-      end
-    end
-    customers
+    repository.engine.invoice_repository.create_failed_invoices_view
+    customer_ids = repository.engine.db.execute("
+      SELECT failed_invoices.customer_id
+      FROM failed_invoices
+      WHERE failed_invoices.merchant_id=#{id}")
+    repository.engine.invoice_repository.drop_failed_invoices_view
+
+    customer_ids.flatten.uniq.map{|customer_id| repository.engine.customer_repository.find_by(:id, customer_id)}
   end
-
-  # def inspect
-  #   self.class.to_s
-  # end
-
 end

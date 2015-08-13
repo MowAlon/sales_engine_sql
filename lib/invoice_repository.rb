@@ -27,4 +27,16 @@ class InvoiceRepository < Repository
     find_by(:id, new_id)
   end
 
+  def create_failed_invoices_view
+    engine.db.execute("
+    CREATE VIEW failed_invoices AS
+    SELECT * FROM invoices
+    EXCEPT
+    SELECT invoices.* FROM invoices JOIN transactions ON invoices.id=transactions.invoice_id WHERE transactions.result='success'")
+  end
+
+  def drop_failed_invoices_view
+    engine.db.execute("DROP VIEW failed_invoices")
+  end
+
 end

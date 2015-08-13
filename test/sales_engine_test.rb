@@ -1,6 +1,5 @@
 require_relative 'test_helper'
 
-
 class SalesEngineTest < MiniTest::Test
 
   def test_it_joins_a_default_path
@@ -32,6 +31,7 @@ class SalesEngineTest < MiniTest::Test
   def test_it_loads_fixture_data
     engine = SalesEngine.new('./data_fixtures')
     engine.startup
+
     assert_equal 1, engine.customer_repository.find_by(:id, 1).id
     assert_equal 'Toy', engine.customer_repository.find_by(:id, 3).last_name
     assert_nil engine.customer_repository.find_by(:id, 21)
@@ -50,7 +50,7 @@ class SalesEngineTest < MiniTest::Test
     engine.startup
     invoice1_data = engine.db.execute("SELECT * FROM invoices WHERE id = 1")
 
-    assert_equal [[1, 1, 26, "shipped", "2012-03-25 09:54:09", "2012-03-25 09:54:09"]], invoice1_data
+    assert_equal [[1, 1, 6, "shipped", "2012-03-25 09:54:09", "2012-03-25 09:54:09"]], invoice1_data
   end
 
   def test_it_loads_invoice_item_records_properly
@@ -58,7 +58,7 @@ class SalesEngineTest < MiniTest::Test
     engine.startup
     invoice_item1_data = engine.db.execute("SELECT * FROM invoice_items WHERE id = 1")
 
-    assert_equal [[1, 539, 1, 5, 13635, "2012-03-27 14:54:09", "2012-03-27 14:54:09"]], invoice_item1_data
+    assert_equal [[1, 9, 1, 5, 22582, "2012-03-27 14:54:09", "2012-03-27 14:54:09"]], invoice_item1_data
   end
 
   def test_it_loads_item_records_properly

@@ -22,16 +22,10 @@ class Customer
   end
 
   def favorite_merchant
-    merchants = Hash.new(0)
-    invoices.each do |invoice|
-      if invoice.successful?
-        merchant_repository = repository.engine.merchant_repository
-        merchant = merchant_repository.find_by(:id, invoice.merchant_id)
-        merchants[merchant] += 1
-      end
-    end
-    return nil if merchants.empty?
-    merchants.sort_by{|merchant, count| count}.reverse[0][0]
+    invoices = invoices_by_merchant
+    return nil if invoices.empty?
+    merchant_id = invoices.sort_by{|merchant_id, data| data.size}.reverse[0][0]
+    repository.engine.merchant_repository.find_by(:id, merchant_id)
   end
 
 private
@@ -41,5 +35,14 @@ private
     SELECT transactions.id
     FROM transactions JOIN invoices ON transactions.invoice_id=invoices.id
     WHERE invoices.customer_id=#{id}").flatten
+  end
+
+  def invoices_by_merchant
+    merchants_and_invoices = repository.engine.db.execute("
+    SELECT invoices.id, invoices.merchant_id
+    FROM invoices JOIN transactions on invoices.id=transactions.invoice_id
+    WHERE transactions.result='success' and invoices.customer_id='#{id}'")
+
+    merchants_and_invoices.group_by{|invoice_id, merchant_id| merchant_id}
   end
 end

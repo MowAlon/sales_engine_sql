@@ -186,7 +186,7 @@ end
 
 engine = SalesEngine.new()
 engine.startup
-if __FILE__ == $0
-  puts "Using csv folder.... #{engine.csv_path}"
-  binding.pry
-end
+# if __FILE__ == $0
+#   puts "Using csv folder.... #{engine.csv_path}"
+#   binding.pry
+# end

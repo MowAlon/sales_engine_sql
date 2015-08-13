@@ -38,10 +38,10 @@ class Invoice
   def revenue
     invoice_item_repository = repository.engine.invoice_item_repository
     invoice_items = invoice_item_repository.find_all_by(:invoice_id, id)
-    # start_num = BigDecimal.new(0)
     total = invoice_items.reduce(0) do |sum, invoice_item|
       sum + invoice_item.revenue
     end
+    BigDecimal.new(total)
   end
 
   def successful?

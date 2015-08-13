@@ -1,4 +1,3 @@
-require_relative 'file_io'
 require_relative 'modules/find_by'
 require_relative 'modules/find_all_by'
 require 'bigdecimal'
@@ -30,12 +29,13 @@ class Repository
     end
   end
 
+
+private
+
   def find_all_by_date(field, data)
     date_records = engine.db.execute "SELECT * FROM #{table_name} WHERE DATE(#{field.to_s}) = DATE('#{data}')"
     instances_of(date_records)
   end
-
-private
 
   def db_records(field, data)
   	engine.db.execute "SELECT * FROM #{table_name} WHERE #{field.to_s} = '#{data}'"
